@@ -24,6 +24,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+  
+#include <Encoder.h>
 
  /*
   * This code and tutorials were written by Eng. Ahmed abdelbasit Mohamed 
@@ -31,8 +33,6 @@
   * github: <- https://github.com/AhmedAbdelbasit ->
   */
   
-#include <Encoder.h>
-
 #define DIR_PIN 8
 #define PWM_PIN 9
 
@@ -45,25 +45,28 @@
 #define POSITION_CONTROL 2
 #define POS_CONTROL_VEL_FEEDBACK 3
 
-char serialCommand = 'P';
+#define CONTINUOUS 0
+#define LIMITED 1
+
+char serialCommand = 'S';
 
 Encoder myEnc(2, 3);
 
-// Right-Side Motors Control
-float speedRef =0; // rpm
-float measuredSpeed = 0;
-float speedError = 0;
-float lastSpeedError = 0;
-float speedErrorSum = 0;
+// Speed Control variables
+float speedRef =0;          // rad/s
+float measuredSpeed = 0;    // measured from encoder ticks
+float speedError = 0;       // reference - measured
+float lastSpeedError = 0;   // delayed measure for derivative calculation
+float speedErrorSum = 0;    // intgeration of error signal
 
-// Position Control
-float positionRef = 0;
-float currentPosition= 0;
-float relativePosition = 0;
-float lastPosition = 0;
-float positionError = 0;
-float lastPositionError = 0;
-float positionErrorSum = 0;
+// Position Control variables
+float positionRef = 0;        // in radian
+float currentPosition= 0;     // measured from encoder ticks
+float relativePosition = 0;   // conditioned to range [ -180 : 180 ]
+float lastPosition = 0;       // delayed measure
+float positionError = 0;      // reference - measured
+float lastPositionError = 0;  // delayed measure for derivative calculation
+float positionErrorSum = 0;   // intgeration of error signal
 
 // Manipulated signal
 float outputPWM = 0;
@@ -106,6 +109,11 @@ float feedbackDampFactor = 0.025;
 //byte controlMode = POSITION_CONTROL;
 byte controlMode = SPEED_CONTROL;
 //byte controlMode = POS_CONTROL_VEL_FEEDBACK;
+
+// Serial monitor display
+byte serialDisplayMode = CONTINUOUS;
+int numberOfSamples  = 500;
+int sampleCounter = 0;
 
 void setup() {
   Serial.begin(38400);
