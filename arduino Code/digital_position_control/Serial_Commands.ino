@@ -13,6 +13,7 @@ void handleCommand(){
       lastPositionError = 0;
       Serial.println("Position Control Enabled");
       break;
+      
     case 'V':
       controlMode = SPEED_CONTROL;
       measuredSpeed = 0;
@@ -20,12 +21,14 @@ void handleCommand(){
       speedErrorSum = 0;
       Serial.println("Speed Control Enabled");
       break;
+      
     case 'F':
       myEnc.write(0);
       controlMode = POS_CONTROL_VEL_FEEDBACK;
       positionErrorSum = 0;
       Serial.println("Position With Velocity feedback");
       break;
+      
     case 'S':
       while(!Serial.available()){}
       if(controlMode == SPEED_CONTROL){
@@ -39,7 +42,12 @@ void handleCommand(){
         positionErrorSum = 0;
       }
       break;
-    default :
+      
+    case 'D':
+      serialDisplayMode = 1 - serialDisplayMode;
+      break;
+      
+    case 'c':
       resetSpeed();
       resetPosition();
   }
